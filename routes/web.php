@@ -61,6 +61,12 @@ Route::get('/run-setup', function () {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
 
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('locations', 'sort_order')) {
+            \Illuminate\Support\Facades\Schema::table('locations', function ($table) {
+                $table->integer('sort_order')->default(0)->after('featured');
+            });
+        }
+
         \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
         $seedOutput = \Illuminate\Support\Facades\Artisan::output();
 

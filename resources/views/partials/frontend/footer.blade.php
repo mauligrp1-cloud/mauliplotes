@@ -16,7 +16,7 @@
     $youtube = \App\Models\Setting::get('social_youtube', 'https://youtube.com/@mauliinfra');
     $linkedin = \App\Models\Setting::get('social_linkedin', 'https://linkedin.com/company/mauliinfra');
 
-    $locations = \App\Models\Location::where('is_active', true)->orderBy('sort_order')->take(5)->get();
+    $locations = \App\Models\Location::where('is_active', true)->orderBy('name')->take(5)->get();
     $projects = \App\Models\Project::where('is_published', true)->orderBy('sort_order')->take(5)->get();
 @endphp
 
