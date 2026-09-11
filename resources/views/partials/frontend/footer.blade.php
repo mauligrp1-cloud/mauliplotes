@@ -176,8 +176,6 @@
                 <a href="{{ route('privacy-policy') }}" class="text-decoration-none hover-white" style="color: #94a3b8;">Privacy Policy</a>
                 <span class="text-secondary opacity-50">·</span>
                 <a href="{{ route('terms-conditions') }}" class="text-decoration-none hover-white" style="color: #94a3b8;">Terms & Conditions</a>
-                <span class="text-secondary opacity-50">·</span>
-                <a href="{{ route('admin.login') }}" class="text-decoration-none hover-white" style="color: #94a3b8;"><i class="bi bi-lock-fill"></i> Staff Portal</a>
             </div>
         </div>
     </div>

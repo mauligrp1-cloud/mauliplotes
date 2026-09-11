@@ -61,7 +61,7 @@ Route::post('/mauli-log', [AuthController::class, 'login'])->name('login.store')
 
 // Disallow public exposure of standard login routes
 Route::get('/login', function () { return redirect('/'); });
-Route::get('/admin/login', function () { return redirect('/'); });
+Route::get('/admin/login', function () { return redirect('/'); })->name('admin.login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Admin Portal Routes (protected by auth + admin middleware)
