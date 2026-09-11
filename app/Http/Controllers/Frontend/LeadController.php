@@ -14,10 +14,22 @@ class LeadController extends Controller
      */
     public function store(Request $request)
     {
+        // Anti-Spam Honeypot check: If bot fills hidden honeypot field, drop silently
+        if ($request->filled('website_hp')) {
+            \Illuminate\Support\Facades\Log::info('Security: Bot submission caught by honeypot.');
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Thank you! Our property advisor will get in touch with you shortly.'
+                ]);
+            }
+            return back()->with('lead_success', 'Thank you! Our advisor will contact you shortly.');
+        }
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'email' => 'nullable|email|max:255',
+            'name' => 'required|string|max:100',
+            'phone' => ['required', 'string', 'min:8', 'max:20', 'regex:/^[0-9+\s\-()]{7,20}$/'],
+            'email' => 'nullable|email|max:150',
             'project_id' => 'nullable',
             'project_interest' => 'nullable|string|max:255',
             'location_interest' => 'nullable|string|max:255',
@@ -26,6 +38,8 @@ class LeadController extends Controller
             'requirement_type' => 'nullable|string|max:100',
             'site_visit_date' => 'nullable|string|max:100',
             'message' => 'nullable|string|max:1000',
+        ], [
+            'phone.regex' => 'Please enter a valid contact phone number.',
         ]);
 
         $notes = [];

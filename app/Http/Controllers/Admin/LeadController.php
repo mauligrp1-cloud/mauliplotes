@@ -11,6 +11,14 @@ use Illuminate\Http\Request;
 
 class LeadController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:leads.view')->only(['index', 'show']);
+        $this->middleware('permission:leads.edit')->only(['edit', 'update', 'addNote']);
+        $this->middleware('permission:leads.delete')->only(['destroy']);
+        $this->middleware('permission:leads.export')->only(['exportCsv']);
+    }
+
     /**
      * Display listing of CRM leads with filters
      */

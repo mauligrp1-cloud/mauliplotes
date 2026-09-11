@@ -13,6 +13,31 @@ use Illuminate\Support\Str;
 
 class BlogController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:blog.view')->only(['index', 'show']);
+        $this->middleware('permission:blog.create')->only(['create', 'store']);
+        $this->middleware('permission:blog.edit')->only(['edit', 'update']);
+        $this->middleware('permission:blog.delete')->only(['destroy']);
+    }
+
+    /**
+     * Sanitize rich-text HTML against XSS payloads
+     */
+    protected function sanitizeHtml(?string $html): string
+    {
+        if (empty($html)) {
+            return '';
+        }
+        $html = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $html);
+        $html = preg_replace('#<iframe(.*?)>(.*?)</iframe>#is', '', $html);
+        $html = preg_replace('#<object(.*?)>(.*?)</object>#is', '', $html);
+        $html = preg_replace('#<embed(.*?)>(.*?)</embed>#is', '', $html);
+        $html = preg_replace('#\s*on[a-zA-Z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]*)#i', '', $html);
+        $html = preg_replace('#([a-zA-Z]+)\s*=\s*("|\')\s*javascript:[^"\']*("|\')#i', '$1="#"', $html);
+        return $html;
+    }
+
     /**
      * Display listing of blog articles
      */
@@ -108,6 +133,7 @@ class BlogController extends Controller
             'tags_input' => 'nullable|string|max:500',
         ]);
 
+        $validated['body'] = $this->sanitizeHtml($validated['body']);
         $validated['slug'] = !empty($validated['slug']) ? Str::slug($validated['slug']) : Str::slug($validated['title']);
         $validated['created_by'] = auth()->id();
         $validated['is_featured'] = $request->boolean('is_featured');
@@ -210,6 +236,7 @@ class BlogController extends Controller
             'tags_input' => 'nullable|string|max:500',
         ]);
 
+        $validated['body'] = $this->sanitizeHtml($validated['body']);
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['enable_cta_box'] = $request->boolean('enable_cta_box', true);
         $validated['related_project_ids'] = is_array($request->input('related_project_ids')) ? array_map('intval', $request->input('related_project_ids')) : null;

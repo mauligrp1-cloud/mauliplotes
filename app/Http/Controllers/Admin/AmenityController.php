@@ -9,6 +9,13 @@ use Illuminate\Support\Str;
 
 class AmenityController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:projects.view')->only(['index']);
+        $this->middleware('permission:projects.edit')->only(['store', 'update']);
+        $this->middleware('permission:projects.delete')->only(['destroy']);
+    }
+
     /**
      * Display a listing of amenities
      */

@@ -48,53 +48,20 @@ Route::get('/gallery', [PageController::class, 'gallery'])->name('gallery');
 Route::get('/blog', [FrontendBlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [FrontendBlogController::class, 'show'])->name('blog.show');
 
-// Public Enquiry & Site Visit Submission
-Route::post('/enquiry', [FrontendLeadController::class, 'store'])->name('enquiry.store');
+// Public Enquiry & Site Visit Submission (Rate-limited to 5 submissions per minute per IP)
+Route::post('/enquiry', [FrontendLeadController::class, 'store'])->name('enquiry.store')->middleware('throttle:5,1');
 
 // SEO XML Sitemap & Robots.txt
 Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
-// One-time Setup & Migration Route
-Route::get('/run-setup', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+// Dedicated Administrator Access Point (Obfuscated & Hardened)
+Route::get('/mauli-log', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/mauli-log', [AuthController::class, 'login'])->name('login.store');
 
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('locations', 'sort_order')) {
-            \Illuminate\Support\Facades\Schema::table('locations', function ($table) {
-                $table->integer('sort_order')->default(0)->after('featured');
-            });
-        }
-
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        $seedOutput = \Illuminate\Support\Facades\Artisan::output();
-
-        try {
-            \Illuminate\Support\Facades\Artisan::call('storage:link');
-        } catch (\Throwable $t) {}
-
-        return response("<html><body style='font-family:sans-serif;padding:30px;line-height:1.6;background:#0f172a;color:#f8fafc;'>"
-            . "<h2 style='color:#22c55e;'>🎉 Database Setup Completed Successfully!</h2>"
-            . "<p>Your database tables and initial site content have been installed.</p>"
-            . "<h3>Admin Credentials:</h3>"
-            . "<p><b>Email:</b> admin@mauliplots.in<br><b>Password:</b> Mauli@12345</p>"
-            . "<a href='/' style='display:inline-block;padding:10px 20px;background:#ea580c;color:#fff;text-decoration:none;border-radius:6px;margin-top:15px;'>Go to Website Home</a>"
-            . "<h4 style='margin-top:30px;'>Migration Details:</h4>"
-            . "<pre style='background:#1e293b;padding:15px;border-radius:6px;overflow:auto;'>" . e($migrateOutput) . "\n" . e($seedOutput) . "</pre>"
-            . "</body></html>");
-    } catch (\Throwable $e) {
-        return response("<html><body style='font-family:sans-serif;padding:30px;line-height:1.6;background:#0f172a;color:#f8fafc;'>"
-            . "<h2 style='color:#ef4444;'>❌ Setup Error</h2>"
-            . "<pre style='background:#1e293b;padding:15px;border-radius:6px;overflow:auto;'>" . e($e->getMessage()) . "\n\n" . e($e->getTraceAsString()) . "</pre>"
-            . "</body></html>", 500);
-    }
-});
-
-// Authentication routes (Admin & Staff)
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.store');
-Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('admin.login');
+// Disallow public exposure of standard login routes
+Route::get('/login', function () { return redirect('/'); });
+Route::get('/admin/login', function () { return redirect('/'); });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Admin Portal Routes (protected by auth + admin middleware)
@@ -203,6 +170,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::delete('/pages/{page}', [WebsiteController::class, 'destroyPage'])->name('admin.pages.destroy')->middleware('permission:website.edit');
     Route::delete('/website/pages/{page}', [WebsiteController::class, 'destroyPage'])->name('admin.website.pages.destroy')->middleware('permission:website.edit');
     Route::get('/seo', function () { return redirect()->route('admin.seo.redirects.index'); })->name('admin.seo.index');
-    Route::resource('users', AdminUserController::class)->names('admin.users')->middleware('permission:users.view');
+    Route::resource('users', AdminUserController::class)->names('admin.users');
     Route::resource('seo/redirects', AdminRedirectController::class)->names('admin.seo.redirects');
 });

@@ -51,17 +51,17 @@ class MediaController extends Controller
      */
     public function store(Request $request)
     {
-        // Support either single 'file' or multiple 'files' array (Max 200MB per file)
+        // Safe allowed business formats (Max 20MB per file) - SVG explicitly excluded to prevent Stored XSS
         $request->validate([
             'files' => 'nullable|array',
-            'files.*' => 'required|file|mimes:jpeg,jpg,png,webp,svg,gif,pdf,mp4,mov,doc,docx|max:204800',
-            'file' => 'nullable|file|mimes:jpeg,jpg,png,webp,svg,gif,pdf,mp4,mov,doc,docx|max:204800',
+            'files.*' => 'required|file|mimes:jpeg,jpg,png,webp,gif,pdf,mp4,mov,doc,docx|max:20480',
+            'file' => 'nullable|file|mimes:jpeg,jpg,png,webp,gif,pdf,mp4,mov,doc,docx|max:20480',
             'title' => 'nullable|string|max:255',
             'alt_text' => 'nullable|string|max:255',
         ], [
-            'file.max' => 'The file exceeds the maximum allowed size (200MB).',
-            'files.*.max' => 'One or more files exceed the maximum allowed size (200MB).',
-            'file.mimes' => 'The file format is not supported. Please upload JPG, PNG, WebP, SVG, PDF, or MP4.',
+            'file.max' => 'The file exceeds the maximum allowed size (20MB).',
+            'files.*.max' => 'One or more files exceed the maximum allowed size (20MB).',
+            'file.mimes' => 'The file format is not supported. Please upload JPG, PNG, WebP, PDF, or MP4.',
             'files.*.mimes' => 'One or more files have an unsupported format.',
         ]);
 
@@ -82,11 +82,23 @@ class MediaController extends Controller
         $savedMedia = [];
         $folder = 'uploads/' . date('Y/m');
 
+        // Strictly block dangerous script and executable extensions
+        $prohibitedExtensions = ['php', 'phar', 'phtml', 'html', 'htm', 'js', 'exe', 'sh', 'py', 'svg', 'bat', 'cmd', 'vbs'];
+
         foreach ($uploadedFiles as $file) {
             $originalName = $file->getClientOriginalName();
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $file->getMimeType();
             $fileSize = $file->getSize();
+
+            if (in_array($extension, $prohibitedExtensions)) {
+                \Illuminate\Support\Facades\Log::warning('Security: Prohibited file extension upload attempt rejected.', [
+                    'original_name' => $originalName,
+                    'extension' => $extension,
+                    'user_id' => auth()->id()
+                ]);
+                abort(422, 'Uploaded file type is not permitted for security reasons.');
+            }
 
             // Determine media type
             $type = 'other';
@@ -139,6 +151,11 @@ class MediaController extends Controller
             $savedMedia[] = $media;
         }
 
+        \Illuminate\Support\Facades\Log::info('Security: Media files uploaded successfully.', [
+            'count' => count($savedMedia),
+            'uploaded_by' => auth()->id()
+        ]);
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -178,12 +195,20 @@ class MediaController extends Controller
      */
     public function destroy(Request $request, Media $media)
     {
-        // Safe delete from storage disk if exists
-        if (Storage::disk('public')->exists($media->file_path)) {
-            Storage::disk('public')->delete($media->file_path);
+        // Safe delete: prevent path traversal by ensuring file_path resides within uploads/ directory
+        if (is_string($media->file_path) && str_starts_with($media->file_path, 'uploads/')) {
+            if (Storage::disk('public')->exists($media->file_path)) {
+                Storage::disk('public')->delete($media->file_path);
+            }
         }
 
         $media->delete();
+
+        \Illuminate\Support\Facades\Log::info('Security: Media asset deleted.', [
+            'media_id' => $media->id,
+            'file_path' => $media->file_path,
+            'deleted_by' => auth()->id()
+        ]);
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

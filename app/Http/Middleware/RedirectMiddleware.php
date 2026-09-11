@@ -25,9 +25,14 @@ class RedirectMiddleware
                     ->first();
 
                 if ($redirect) {
+                    $targetUrl = trim($redirect->new_url);
+                    // Block malicious pseudo-protocols (e.g. javascript:, data:, vbscript:)
+                    if (preg_match('#^\s*(javascript|data|vbscript)\s*:#i', $targetUrl)) {
+                        return $next($request);
+                    }
                     // Increment hits counter asynchronously or silently
                     $redirect->increment('hits');
-                    return redirect($redirect->new_url, (int) $redirect->redirect_type);
+                    return redirect($targetUrl, (int) $redirect->redirect_type);
                 }
             } catch (\Exception $e) {
                 // Table might not exist yet or connection error, silently proceed

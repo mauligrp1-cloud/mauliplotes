@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 
 class TeamController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:content.view')->only(['index', 'show']);
+        $this->middleware('permission:content.edit')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    }
+
     /**
      * Display listing of team members
      */

@@ -10,6 +10,13 @@ use Illuminate\Http\Request;
 
 class SiteVisitController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:leads.view')->only(['index', 'show']);
+        $this->middleware('permission:leads.edit')->only(['create', 'store', 'edit', 'update']);
+        $this->middleware('permission:leads.delete')->only(['destroy']);
+    }
+
     /**
      * Display listing of booked site visits
      */

@@ -11,6 +11,14 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:users.view')->only(['index', 'show']);
+        $this->middleware('permission:users.create')->only(['create', 'store']);
+        $this->middleware('permission:users.edit')->only(['edit', 'update']);
+        $this->middleware('permission:users.delete')->only(['destroy']);
+    }
+
     /**
      * Display a listing of users & roles
      */
@@ -55,10 +63,24 @@ class UserController extends Controller
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:6|max:72',
             'roles'    => 'required|array|min:1',
             'roles.*'  => 'exists:roles,id',
         ]);
+
+        // Anti-privilege-escalation: only Super Admins can assign super-admin or admin roles
+        if (!auth()->user()->isSuperAdmin()) {
+            $privilegedRoleIds = Role::whereIn('slug', ['super-admin', 'admin'])->pluck('id')->toArray();
+            foreach ($validated['roles'] as $roleId) {
+                if (in_array($roleId, $privilegedRoleIds)) {
+                    \Illuminate\Support\Facades\Log::warning('Security: Unauthorized privilege escalation attempt in user store.', [
+                        'by_user' => auth()->id(),
+                        'attempted_role_id' => $roleId
+                    ]);
+                    abort(403, 'Only a Super Administrator can assign administrative roles.');
+                }
+            }
+        }
 
         $user = User::create([
             'name'     => $validated['name'],
@@ -68,6 +90,11 @@ class UserController extends Controller
 
         $user->roles()->sync($validated['roles']);
 
+        \Illuminate\Support\Facades\Log::info('Security: User created by admin.', [
+            'created_user_id' => $user->id,
+            'created_by' => auth()->id()
+        ]);
+
         return redirect()->route('admin.users.index')->with('success', "User '{$user->name}' created successfully with assigned role(s).");
     }
 
@@ -76,6 +103,10 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        if ($user->isSuperAdmin() && !auth()->user()->isSuperAdmin()) {
+            abort(403, 'Only a Super Administrator can edit a Super Administrator account.');
+        }
+
         $roles = Role::all();
         $userRoleIds = $user->roles->pluck('id')->toArray();
         return view('admin.users.edit', compact('user', 'roles', 'userRoleIds'));
@@ -86,13 +117,32 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        if ($user->isSuperAdmin() && !auth()->user()->isSuperAdmin()) {
+            abort(403, 'Only a Super Administrator can edit a Super Administrator account.');
+        }
+
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:6|max:72',
             'roles'    => 'required|array|min:1',
             'roles.*'  => 'exists:roles,id',
         ]);
+
+        // Anti-privilege-escalation: only Super Admins can assign super-admin or admin roles
+        if (!auth()->user()->isSuperAdmin()) {
+            $privilegedRoleIds = Role::whereIn('slug', ['super-admin', 'admin'])->pluck('id')->toArray();
+            foreach ($validated['roles'] as $roleId) {
+                if (in_array($roleId, $privilegedRoleIds)) {
+                    \Illuminate\Support\Facades\Log::warning('Security: Unauthorized privilege escalation attempt in user update.', [
+                        'by_user' => auth()->id(),
+                        'target_user' => $user->id,
+                        'attempted_role_id' => $roleId
+                    ]);
+                    abort(403, 'Only a Super Administrator can assign administrative roles.');
+                }
+            }
+        }
 
         $user->name  = $validated['name'];
         $user->email = $validated['email'];
@@ -104,6 +154,11 @@ class UserController extends Controller
         $user->save();
         $user->roles()->sync($validated['roles']);
 
+        \Illuminate\Support\Facades\Log::info('Security: User updated by admin.', [
+            'target_user_id' => $user->id,
+            'updated_by' => auth()->id()
+        ]);
+
         return redirect()->route('admin.users.index')->with('success', "User '{$user->name}' updated successfully.");
     }
 
@@ -114,6 +169,10 @@ class UserController extends Controller
     {
         if (auth()->id() === $user->id) {
             return redirect()->route('admin.users.index')->with('error', 'You cannot delete your own active administrator account.');
+        }
+
+        if ($user->isSuperAdmin() && !auth()->user()->isSuperAdmin()) {
+            abort(403, 'Only a Super Administrator can delete a Super Administrator account.');
         }
 
         if ($user->isSuperAdmin()) {
@@ -129,6 +188,11 @@ class UserController extends Controller
         $name = $user->name;
         $user->roles()->detach();
         $user->delete();
+
+        \Illuminate\Support\Facades\Log::info('Security: User deleted by admin.', [
+            'deleted_user_name' => $name,
+            'deleted_by' => auth()->id()
+        ]);
 
         return redirect()->route('admin.users.index')->with('success', "User '{$name}' has been deleted successfully.");
     }

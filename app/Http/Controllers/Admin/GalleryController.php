@@ -12,6 +12,12 @@ use Illuminate\Support\Str;
 
 class GalleryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:content.view')->only(['index']);
+        $this->middleware('permission:content.edit')->only(['store', 'bulkStore', 'update', 'toggleActive', 'reorder', 'storeCategory', 'destroy', 'destroyCategory']);
+    }
+
     /**
      * Display the full gallery management page with categories and items.
      */

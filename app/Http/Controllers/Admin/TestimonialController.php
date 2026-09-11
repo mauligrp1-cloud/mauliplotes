@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 
 class TestimonialController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:content.view')->only(['index', 'show']);
+        $this->middleware('permission:content.edit')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    }
+
     /**
      * Display listing of testimonials
      */

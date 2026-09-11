@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 
 class RedirectController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:seo.view')->only(['index']);
+        $this->middleware('permission:seo.edit')->only(['store', 'update', 'destroy']);
+    }
+
     /**
      * Display listing of 301/302 redirects
      */
@@ -24,9 +30,11 @@ class RedirectController extends Controller
     {
         $validated = $request->validate([
             'old_url' => 'required|string|max:500|unique:redirects,old_url',
-            'new_url' => 'required|string|max:500',
+            'new_url' => ['required', 'string', 'max:500', 'regex:#^(https?://|/)[a-zA-Z0-9_\-./?&=#%~+]*$#i'],
             'redirect_type' => 'required|in:301,302',
             'is_active' => 'nullable|boolean',
+        ], [
+            'new_url.regex' => 'The destination URL must start with / for internal paths or http:// / https:// for external URLs, and cannot contain script protocols.',
         ]);
 
         $validated['old_url'] = '/' . ltrim(trim($validated['old_url']), '/');
@@ -45,9 +53,11 @@ class RedirectController extends Controller
     {
         $validated = $request->validate([
             'old_url' => 'required|string|max:500|unique:redirects,old_url,' . $redirect->id,
-            'new_url' => 'required|string|max:500',
+            'new_url' => ['required', 'string', 'max:500', 'regex:#^(https?://|/)[a-zA-Z0-9_\-./?&=#%~+]*$#i'],
             'redirect_type' => 'required|in:301,302',
             'is_active' => 'nullable|boolean',
+        ], [
+            'new_url.regex' => 'The destination URL must start with / for internal paths or http:// / https:// for external URLs, and cannot contain script protocols.',
         ]);
 
         $validated['old_url'] = '/' . ltrim(trim($validated['old_url']), '/');

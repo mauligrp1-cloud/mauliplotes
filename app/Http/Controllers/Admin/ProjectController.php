@@ -16,6 +16,14 @@ use Illuminate\Support\Str;
 
 class ProjectController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:projects.view')->only(['index', 'show']);
+        $this->middleware('permission:projects.create')->only(['create', 'store', 'duplicate']);
+        $this->middleware('permission:projects.edit')->only(['edit', 'update', 'reorder', 'storeImage', 'updateImage', 'destroyImage']);
+        $this->middleware('permission:projects.delete')->only(['destroy']);
+    }
+
     /**
      * Display a listing of projects with search and filters
      */

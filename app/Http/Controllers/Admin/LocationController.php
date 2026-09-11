@@ -9,6 +9,14 @@ use Illuminate\Support\Str;
 
 class LocationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:locations.view')->only(['index', 'show']);
+        $this->middleware('permission:locations.create')->only(['create', 'store']);
+        $this->middleware('permission:locations.edit')->only(['edit', 'update']);
+        $this->middleware('permission:locations.delete')->only(['destroy']);
+    }
+
     /**
      * Display a listing of strategic locations / growth corridors
      */

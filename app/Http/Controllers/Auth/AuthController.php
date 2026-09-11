@@ -31,13 +31,17 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string', 'min:6'],
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'password' => ['required', 'string', 'min:6', 'max:72'],
         ]);
 
         $throttleKey = Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            \Illuminate\Support\Facades\Log::warning('Security: Login rate limit exceeded.', [
+                'email' => $request->input('email'),
+                'ip' => $request->ip()
+            ]);
             $seconds = RateLimiter::availableIn($throttleKey);
             throw ValidationException::withMessages([
                 'email' => trans('auth.throttle', [
@@ -53,6 +57,11 @@ class AuthController extends Controller
 
             // Check if user has staff or admin role
             if (!$user->isStaffOrAdmin()) {
+                \Illuminate\Support\Facades\Log::warning('Security: Unauthorized CMS login attempt by non-staff user.', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'ip' => $request->ip()
+                ]);
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Your account does not have permission to access the administrative CMS.',
@@ -60,10 +69,20 @@ class AuthController extends Controller
             }
 
             $request->session()->regenerate();
+            \Illuminate\Support\Facades\Log::info('Security: Successful CMS login.', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'ip' => $request->ip()
+            ]);
             return redirect()->intended(route('admin.dashboard'));
         }
 
         RateLimiter::hit($throttleKey, 60);
+
+        \Illuminate\Support\Facades\Log::warning('Security: Failed CMS login credentials.', [
+            'email' => $request->input('email'),
+            'ip' => $request->ip()
+        ]);
 
         throw ValidationException::withMessages([
             'email' => __('auth.failed'),
@@ -75,6 +94,12 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        if (Auth::check()) {
+            \Illuminate\Support\Facades\Log::info('Security: CMS user logged out.', [
+                'user_id' => Auth::id(),
+                'ip' => $request->ip()
+            ]);
+        }
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
