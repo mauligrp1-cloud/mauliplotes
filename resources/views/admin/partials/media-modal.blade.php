@@ -65,6 +65,7 @@
                                 <span id="modalUploadBtnText"><i class="bi bi-upload me-1"></i> Upload & Select</span>
                                 <span id="modalUploadSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                             </button>
+                            <div id="modalCompressStatus" class="small text-muted mt-2 d-none fw-semibold"></div>
                         </div>
                     </div>
                 </div>
@@ -195,26 +196,90 @@
             });
         }
 
+        // Client-side image compression helper (Compresses 15-20MB phone photos to KB in ~0.3s)
+        function compressClientImage(file, maxDimension = 1920, quality = 0.82) {
+            return new Promise((resolve) => {
+                if (!file || !file.type.startsWith('image/') || file.type === 'image/gif') {
+                    return resolve(file);
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDimension || h > maxDimension) {
+                            if (w >= h) {
+                                h = Math.round((h * maxDimension) / w);
+                                w = maxDimension;
+                            } else {
+                                w = Math.round((w * maxDimension) / h);
+                                h = maxDimension;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+
+                        canvas.toBlob(function(blob) {
+                            if (blob && blob.size < file.size) {
+                                const newName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+                                const compressed = new File([blob], newName, { type: 'image/webp', lastModified: Date.now() });
+                                resolve(compressed);
+                            } else {
+                                resolve(file);
+                            }
+                        }, 'image/webp', quality);
+                    };
+                    img.onerror = () => resolve(file);
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => resolve(file);
+                reader.readAsDataURL(file);
+            });
+        }
+
         // Quick upload handling
         const quickUploadBtn = document.getElementById('modalQuickUploadBtn');
         const quickFileInput = document.getElementById('modalQuickFileInput');
 
         if (quickUploadBtn && quickFileInput) {
-            quickUploadBtn.addEventListener('click', function() {
+            quickUploadBtn.addEventListener('click', async function() {
                 if (!quickFileInput.files || quickFileInput.files.length === 0) {
                     alert('Please choose a file to upload first.');
                     return;
                 }
 
-                const formData = new FormData();
-                formData.append('file', quickFileInput.files[0]);
-                formData.append('_token', '{{ csrf_token() }}');
-
                 const btnText = document.getElementById('modalUploadBtnText');
                 const spinner = document.getElementById('modalUploadSpinner');
+                const compressStatus = document.getElementById('modalCompressStatus');
+
                 btnText.classList.add('d-none');
                 spinner.classList.remove('d-none');
                 quickUploadBtn.disabled = true;
+
+                let fileToUpload = quickFileInput.files[0];
+                if (fileToUpload.type.startsWith('image/')) {
+                    if (compressStatus) {
+                        compressStatus.classList.remove('d-none');
+                        compressStatus.innerHTML = '<i class="bi bi-gear-wide-connected me-1"></i> Optimizing HD photo to KB...';
+                    }
+                    try {
+                        fileToUpload = await compressClientImage(fileToUpload);
+                    } catch (e) {
+                        console.warn('Client compression skipped:', e);
+                    }
+                }
+
+                if (compressStatus) {
+                    compressStatus.innerHTML = '<i class="bi bi-cloud-arrow-up me-1"></i> Uploading to server...';
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileToUpload);
+                formData.append('_token', '{{ csrf_token() }}');
 
                 fetch("{{ route('admin.media.store') }}", {
                     method: 'POST',
@@ -229,6 +294,7 @@
                     btnText.classList.remove('d-none');
                     spinner.classList.add('d-none');
                     quickUploadBtn.disabled = false;
+                    if (compressStatus) compressStatus.classList.add('d-none');
 
                     if (json.success && json.media && json.media.length > 0) {
                         applySelectedMedia(json.media[0].url);
@@ -240,6 +306,7 @@
                     btnText.classList.remove('d-none');
                     spinner.classList.add('d-none');
                     quickUploadBtn.disabled = false;
+                    if (compressStatus) compressStatus.classList.add('d-none');
                     alert('An error occurred during upload.');
                 });
             });

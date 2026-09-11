@@ -51,16 +51,16 @@ class MediaController extends Controller
      */
     public function store(Request $request)
     {
-        // Safe allowed business formats (Max 20MB per file) - SVG explicitly excluded to prevent Stored XSS
+        // Safe allowed business formats (Max 100MB per file) - SVG explicitly excluded to prevent Stored XSS
         $request->validate([
             'files' => 'nullable|array',
-            'files.*' => 'required|file|mimes:jpeg,jpg,png,webp,gif,pdf,mp4,mov,doc,docx|max:20480',
-            'file' => 'nullable|file|mimes:jpeg,jpg,png,webp,gif,pdf,mp4,mov,doc,docx|max:20480',
+            'files.*' => 'required|file|mimes:jpeg,jpg,png,webp,gif,pdf,mp4,mov,doc,docx|max:102400',
+            'file' => 'nullable|file|mimes:jpeg,jpg,png,webp,gif,pdf,mp4,mov,doc,docx|max:102400',
             'title' => 'nullable|string|max:255',
             'alt_text' => 'nullable|string|max:255',
         ], [
-            'file.max' => 'The file exceeds the maximum allowed size (20MB).',
-            'files.*.max' => 'One or more files exceed the maximum allowed size (20MB).',
+            'file.max' => 'The file exceeds the maximum allowed size (100MB).',
+            'files.*.max' => 'One or more files exceed the maximum allowed size (100MB).',
             'file.mimes' => 'The file format is not supported. Please upload JPG, PNG, WebP, PDF, or MP4.',
             'files.*.mimes' => 'One or more files have an unsupported format.',
         ]);

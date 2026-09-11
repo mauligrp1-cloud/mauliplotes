@@ -275,6 +275,93 @@
             });
         }
 
+        // Client-side image compression helper (Compresses 15-20MB phone photos to KB in ~0.3s)
+        function compressClientImage(file, maxDimension = 1920, quality = 0.82) {
+            return new Promise((resolve) => {
+                if (!file || !file.type.startsWith('image/') || file.type === 'image/gif') {
+                    return resolve(file);
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDimension || h > maxDimension) {
+                            if (w >= h) {
+                                h = Math.round((h * maxDimension) / w);
+                                w = maxDimension;
+                            } else {
+                                w = Math.round((w * maxDimension) / h);
+                                h = maxDimension;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+
+                        canvas.toBlob(function(blob) {
+                            if (blob && blob.size < file.size) {
+                                const newName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+                                const compressed = new File([blob], newName, { type: 'image/webp', lastModified: Date.now() });
+                                resolve(compressed);
+                            } else {
+                                resolve(file);
+                            }
+                        }, 'image/webp', quality);
+                    };
+                    img.onerror = () => resolve(file);
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => resolve(file);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const mediaUploadForm = document.getElementById('mediaUploadForm');
+        if (mediaUploadForm && fileInput) {
+            let isCompressing = false;
+            mediaUploadForm.addEventListener('submit', async function(e) {
+                if (isCompressing) return;
+                if (!fileInput.files || fileInput.files.length === 0) return;
+
+                const files = Array.from(fileInput.files);
+                const hasImages = files.some(f => f.type.startsWith('image/'));
+
+                if (hasImages && window.DataTransfer) {
+                    e.preventDefault();
+                    isCompressing = true;
+                    const submitBtn = mediaUploadForm.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Optimizing to KB...';
+                    }
+
+                    const dt = new DataTransfer();
+                    for (let file of files) {
+                        if (file.type.startsWith('image/')) {
+                            try {
+                                const comp = await compressClientImage(file);
+                                dt.items.add(comp);
+                            } catch (err) {
+                                dt.items.add(file);
+                            }
+                        } else {
+                            dt.items.add(file);
+                        }
+                    }
+
+                    fileInput.files = dt.files;
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Uploading...';
+                    }
+                    mediaUploadForm.submit();
+                }
+            });
+        }
+
         // Copy URL to clipboard
         const toastEl = document.getElementById('copyToast');
         const toast = toastEl ? new bootstrap.Toast(toastEl, { delay: 2000 }) : null;
