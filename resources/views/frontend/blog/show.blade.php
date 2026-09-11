@@ -186,7 +186,7 @@
                     
                     @if($post->featured_image_url)
                         <div class="mb-4 text-center rounded-3 overflow-hidden shadow-sm position-relative">
-                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" class="img-fluid w-100" style="max-height: 440px; object-fit: cover;">
+                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" class="img-fluid w-100" style="max-height: 440px; object-fit: cover;" loading="lazy" decoding="async">
                         </div>
                     @endif
 
@@ -286,7 +286,7 @@
                                 <div class="col-md-4">
                                     <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden bg-white">
                                         <div style="height: 140px; overflow: hidden;" class="position-relative">
-                                            <img src="{{ $p->featured_image_url ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400' }}" alt="{{ $p->name }}" class="w-100 h-100 object-fit-cover">
+                                            <img src="{{ $p->featured_image_url ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400' }}" alt="{{ $p->name }}" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async">
                                             @if($p->location)
                                                 <span class="badge bg-dark position-absolute top-0 start-0 m-2 small">{{ $p->location->name }}</span>
                                             @endif
@@ -334,7 +334,7 @@
                                 @foreach($relatedPosts as $rp)
                                     <div class="d-flex gap-2 align-items-start">
                                         @if($rp->featured_image_url)
-                                            <img src="{{ $rp->featured_image_url }}" alt="{{ $rp->title }}" class="rounded border" style="width: 60px; height: 45px; object-fit: cover; flex-shrink: 0;">
+                                            <img src="{{ $rp->featured_image_url }}" alt="{{ $rp->title }}" class="rounded border" style="width: 60px; height: 45px; object-fit: cover; flex-shrink: 0;" loading="lazy" decoding="async">
                                         @endif
                                         <div>
                                             <a href="{{ route('blog.show', $rp->slug) }}" class="fw-semibold text-dark text-decoration-none hover-warning small d-block mb-1" style="line-height: 1.3;">

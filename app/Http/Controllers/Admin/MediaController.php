@@ -112,37 +112,18 @@ class MediaController extends Controller
                 $type = 'document';
             }
 
-            // Generate safe, sanitized stored filename
-            $baseName = pathinfo($originalName, PATHINFO_FILENAME);
-            $safeSlug = Str::slug($baseName);
-            if (empty($safeSlug)) {
-                $safeSlug = 'file';
-            }
-            $storedFilename = $safeSlug . '-' . Str::random(8) . '.' . $extension;
-
-            // Store file to public storage disk
-            $path = $file->storeAs($folder, $storedFilename, 'public');
-
-            // Determine dimensions if image
-            $width = null;
-            $height = null;
-            if ($type === 'image' && in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
-                $imageInfo = @getimagesize($file->getRealPath());
-                if ($imageInfo) {
-                    $width = $imageInfo[0];
-                    $height = $imageInfo[1];
-                }
-            }
+            // Process and optimize upload (Auto-compress 15-20MB images to crisp HD WebP in KB)
+            $uploadResult = \App\Services\ImageOptimizer::optimizeAndStore($file, $folder);
 
             $media = Media::create([
                 'original_filename' => $originalName,
-                'stored_filename' => $storedFilename,
-                'file_path' => $path,
-                'mime_type' => $mimeType,
-                'file_size' => $fileSize,
-                'width' => $width,
-                'height' => $height,
-                'type' => $type,
+                'stored_filename' => $uploadResult['stored_filename'],
+                'file_path' => $uploadResult['file_path'],
+                'mime_type' => $uploadResult['mime_type'],
+                'file_size' => $uploadResult['file_size'],
+                'width' => $uploadResult['width'],
+                'height' => $uploadResult['height'],
+                'type' => $uploadResult['type'],
                 'title' => $request->input('title') ?? pathinfo($originalName, PATHINFO_FILENAME),
                 'alt_text' => $request->input('alt_text') ?? pathinfo($originalName, PATHINFO_FILENAME),
                 'uploaded_by' => auth()->id() ?? 1,

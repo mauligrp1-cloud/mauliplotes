@@ -1261,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-lg-5">
                 @if(!empty($aboutSec->image))
                     <div class="about-image-card">
-                        <img src="{{ $aboutSec->image }}" alt="{{ $aboutSec->title ?? 'About Mauli Infra' }}" onerror="this.parentElement.innerHTML='<div class=\'about-monogram-card\'><div class=\'monogram-icon\'>M</div><h3 class=\'h4 text-white fw-bold mb-2\'>MAULI INFRA</h3><p class=\'text-white-50 small mb-0\'>Decades of combined real estate expertise dedicated to transparency, title clarity, and client delight.</p></div>'">
+                        <img src="{{ $aboutSec->image }}" alt="{{ $aboutSec->title ?? 'About Mauli Infra' }}" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML='<div class=\'about-monogram-card\'><div class=\'monogram-icon\'>M</div><h3 class=\'h4 text-white fw-bold mb-2\'>MAULI INFRA</h3><p class=\'text-white-50 small mb-0\'>Decades of combined real estate expertise dedicated to transparency, title clarity, and client delight.</p></div>'">
                         <div class="position-absolute bottom-0 start-0 end-0 p-4" style="background: linear-gradient(to top, rgba(11,23,33,0.95) 0%, rgba(11,23,33,0.65) 50%, transparent 100%);">
                             <span class="badge bg-warning text-dark fw-bold mb-2 text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.8px;">MAULI INFRA</span>
                             <h4 class="text-white fw-bold mb-1 h5">{{ $aboutSec->options['image_title'] ?? 'Landmark Plotted Communities' }}</h4>
@@ -1465,7 +1465,7 @@ document.addEventListener('DOMContentLoaded', function() {
             @foreach($galleryItems->take(6) as $item)
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="gallery-thumb">
-                        <img src="{{ $item->image_url }}" alt="{{ $item->title ?? 'Site Progress' }}">
+                        <img src="{{ $item->image_url }}" alt="{{ $item->title ?? 'Site Progress' }}" loading="lazy" decoding="async">
                     </div>
                 </div>
             @endforeach
@@ -1498,7 +1498,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-md-4">
                     <div class="project-grid-card">
                         <div class="project-card-img-wrap" style="height: 180px;">
-                            <img src="{{ $post->featured_image_url ?: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800' }}" alt="{{ $post->title }}">
+                            <img src="{{ $post->featured_image_url ?: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800' }}" alt="{{ $post->title }}" loading="lazy" decoding="async">
                         </div>
                         <div class="project-card-body">
                             <span class="text-muted extra-small mb-2 d-block" style="font-size: 0.78rem;">

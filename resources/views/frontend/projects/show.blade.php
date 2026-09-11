@@ -1005,7 +1005,7 @@
                     @php
                         $overviewImg = $project->overview_image_url ?: ($project->images->where('type', 'gallery')->first()->url ?? ($project->featured_image_url ?: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&q=80'));
                     @endphp
-                    <img src="{{ $overviewImg }}" alt="{{ $project->overview_image_alt ?: ($project->name . ' Township Overview') }}" class="img-fluid w-100 rounded-2 d-block" style="max-height: 540px; object-fit: cover;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&q=80';">
+                    <img src="{{ $overviewImg }}" alt="{{ $project->overview_image_alt ?: ($project->name . ' Township Overview') }}" class="img-fluid w-100 rounded-2 d-block" style="max-height: 540px; object-fit: cover;" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&q=80';">
                 </div>
             </div>
         </div>
@@ -1119,7 +1119,7 @@
                 @if($first)
                 <div class="col-lg-7">
                     <div class="bento-amenity-card bento-card-tall">
-                        <img src="{{ $first->url }}" alt="{{ $first->alt_text ?: $first->caption ?: 'Amenity' }}" class="bento-bg-img">
+                        <img src="{{ $first->url }}" alt="{{ $first->alt_text ?: $first->caption ?: 'Amenity' }}" class="bento-bg-img" loading="lazy" decoding="async">
                         <div class="bento-overlay"></div>
                         <div class="bento-badge">01</div>
                         <div class="bento-content">
@@ -1136,7 +1136,7 @@
                     <div class="d-flex flex-column gap-3 gap-lg-4 h-100">
                         @if($second)
                         <div class="bento-amenity-card bento-card-half flex-fill">
-                            <img src="{{ $second->url }}" alt="{{ $second->alt_text ?: $second->caption ?: 'Amenity' }}" class="bento-bg-img">
+                            <img src="{{ $second->url }}" alt="{{ $second->alt_text ?: $second->caption ?: 'Amenity' }}" class="bento-bg-img" loading="lazy" decoding="async">
                             <div class="bento-overlay"></div>
                             <div class="bento-badge">02</div>
                             <div class="bento-content">
@@ -1146,7 +1146,7 @@
                         @endif
                         @if($third)
                         <div class="bento-amenity-card bento-card-half flex-fill">
-                            <img src="{{ $third->url }}" alt="{{ $third->alt_text ?: $third->caption ?: 'Amenity' }}" class="bento-bg-img">
+                            <img src="{{ $third->url }}" alt="{{ $third->alt_text ?: $third->caption ?: 'Amenity' }}" class="bento-bg-img" loading="lazy" decoding="async">
                             <div class="bento-overlay"></div>
                             <div class="bento-badge">03</div>
                             <div class="bento-content">
@@ -1164,7 +1164,7 @@
                 @foreach($rest as $idx => $img)
                 <div class="col-md-4">
                     <div class="bento-amenity-card bento-card-bottom">
-                        <img src="{{ $img->url }}" alt="{{ $img->alt_text ?: $img->caption ?: 'Amenity' }}" class="bento-bg-img">
+                        <img src="{{ $img->url }}" alt="{{ $img->alt_text ?: $img->caption ?: 'Amenity' }}" class="bento-bg-img" loading="lazy" decoding="async">
                         <div class="bento-overlay"></div>
                         <div class="bento-badge">{{ sprintf('%02d', $idx + 4) }}</div>
                         <div class="bento-content">
@@ -1419,7 +1419,7 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100 position-relative">
                         <div style="height: 240px; overflow: hidden; background: #0b1721;">
-                            <img src="{{ $masterPlanImg }}" alt="{{ $project->name }} Master Layout Blueprint" class="w-100 h-100 object-fit-cover" style="transition: transform 0.3s ease;">
+                            <img src="{{ $masterPlanImg }}" alt="{{ $project->name }} Master Layout Blueprint" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async" style="transition: transform 0.3s ease;">
                         </div>
                         <div class="p-3 bg-white">
                             <span class="badge bg-warning text-dark mb-1" style="font-size: 0.7rem;">MASTER PLAN</span>
@@ -1434,7 +1434,7 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100 position-relative">
                         <div style="height: 240px; overflow: hidden; background: #f1f5f9;">
-                            <img src="{{ $photo->url }}" alt="{{ $photo->alt_text ?: ($project->name . ' Site Photo') }}" class="w-100 h-100 object-fit-cover" loading="lazy">
+                            <img src="{{ $photo->url }}" alt="{{ $photo->alt_text ?: ($project->name . ' Site Photo') }}" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async">
                         </div>
                         @if($photo->alt_text)
                             <div class="p-3 bg-white">
@@ -1468,7 +1468,7 @@
 
                     @if($project->location_map)
                         <div class="card border rounded-2 overflow-hidden shadow-sm mb-3 position-relative" style="height: 220px;">
-                            <img src="{{ $project->location_map }}" alt="{{ $project->name }} Location Route Map" class="w-100 h-100 object-fit-cover">
+                            <img src="{{ $project->location_map }}" alt="{{ $project->name }} Location Route Map" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async">
                             <a href="{{ $project->location_map }}" target="_blank" class="stretched-link" title="Expand Route Map"></a>
                         </div>
                     @endif
@@ -1502,7 +1502,7 @@
                             <div class="col-4">
                                 <div class="related-card">
                                     <div class="related-card-img">
-                                        <img src="{{ $relProj->featured_image_url ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80' }}" alt="{{ $relProj->name }}">
+                                        <img src="{{ $relProj->featured_image_url ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80' }}" alt="{{ $relProj->name }}" loading="lazy" decoding="async">
                                     </div>
                                     <div class="related-card-body">
                                         <h4 class="fw-bold text-dark mb-1 text-truncate" style="font-size: 0.85rem;" title="{{ $relProj->name }}">{{ $relProj->name }}</h4>

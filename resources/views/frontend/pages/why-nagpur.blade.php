@@ -129,7 +129,7 @@
             @foreach($locations as $loc)
                 <div class="col-md-6 col-lg-3">
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 bg-white hover-lift">
-                        <img src="{{ $loc->hero_image ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600' }}" alt="{{ $loc->name }}" class="card-img-top aspect-ratio-16-9">
+                        <img src="{{ $loc->hero_image ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600' }}" alt="{{ $loc->name }}" class="card-img-top aspect-ratio-16-9" loading="lazy" decoding="async">
                         <div class="card-body p-3 d-flex flex-column">
                             <h5 class="fw-bold text-dark mb-1">{{ $loc->name }}</h5>
                             <p class="text-muted small mb-3 flex-grow-1">{{ Str::limit($loc->short_description, 80) }}</p>

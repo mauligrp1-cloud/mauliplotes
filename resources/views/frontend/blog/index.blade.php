@@ -55,7 +55,7 @@
                 <div class="row g-0 align-items-center">
                     <div class="col-lg-7">
                         <div style="height: 380px; overflow: hidden;" class="position-relative">
-                            <img src="{{ $featuredPost->featured_image_url ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1000' }}" alt="{{ $featuredPost->title }}" class="w-100 h-100 object-fit-cover">
+                            <img src="{{ $featuredPost->featured_image_url ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1000' }}" alt="{{ $featuredPost->title }}" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async">
                             <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 shadow px-3 py-2 fw-bold">
                                 <i class="bi bi-star-fill me-1"></i> FEATURED ARTICLE
                             </span>
@@ -88,7 +88,7 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 bg-white hover-lift d-flex flex-column">
                         <div class="position-relative" style="height: 220px; overflow: hidden;">
-                            <img src="{{ $post->featured_image_url ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600' }}" alt="{{ $post->title }}" class="w-100 h-100 object-fit-cover">
+                            <img src="{{ $post->featured_image_url ?: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600' }}" alt="{{ $post->title }}" class="w-100 h-100 object-fit-cover" loading="lazy" decoding="async">
                             @if($post->categories->first())
                                 <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 shadow-sm px-2 py-1 fw-bold">
                                     {{ $post->categories->first()->name }}

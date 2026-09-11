@@ -49,7 +49,7 @@
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
                 <div class="position-relative">
-                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800" alt="Mauli Infra Land Development" class="img-fluid rounded-4 shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800" alt="Mauli Infra Land Development" class="img-fluid rounded-4 shadow-lg" loading="lazy" decoding="async">
                     <div class="position-absolute bottom-0 start-0 m-4 p-3 bg-warning text-dark rounded-3 shadow fw-bold d-flex align-items-center gap-3">
                         <div class="display-6 fw-bold mb-0">20+</div>
                         <div class="small lh-sm">Years of<br>Unmatched Trust</div>
@@ -174,7 +174,7 @@
                 @foreach($team as $member)
                     <div class="col-md-6 col-lg-3">
                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden text-center bg-light h-100">
-                            <img src="{{ $member->photo ?: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400' }}" alt="{{ $member->name }}" class="card-img-top" style="height: 260px; object-fit: cover;">
+                            <img src="{{ $member->photo ?: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400' }}" alt="{{ $member->name }}" class="card-img-top" style="height: 260px; object-fit: cover;" loading="lazy" decoding="async">
                             <div class="card-body p-3">
                                 <h5 class="fw-bold text-dark mb-1">{{ $member->name }}</h5>
                                 <div class="text-warning fw-semibold small mb-2">{{ $member->designation }}</div>
