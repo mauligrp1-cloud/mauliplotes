@@ -40,7 +40,7 @@ class PageController extends Controller
 
         $locations = Location::where('is_active', true)
             ->withCount('projects')
-            ->orderBy('sort_order')
+            ->orderBy('name')
             ->get();
 
         $testimonials = Testimonial::where('is_active', true)
