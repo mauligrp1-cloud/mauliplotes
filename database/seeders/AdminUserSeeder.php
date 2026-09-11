@@ -29,7 +29,15 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make('Mauli@12345'),
             ]
         );
-
         $user->roles()->syncWithoutDetaching([$role->id]);
+
+        $user2 = User::updateOrCreate(
+            ['email' => 'admin@mauliplots.in'],
+            [
+                'name' => 'Mauli Administrator',
+                'password' => Hash::make('Mauli@12345'),
+            ]
+        );
+        $user2->roles()->syncWithoutDetaching([$role->id]);
     }
 }

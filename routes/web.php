@@ -55,6 +55,36 @@ Route::post('/enquiry', [FrontendLeadController::class, 'store'])->name('enquiry
 Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
+// One-time Setup & Migration Route
+Route::get('/run-setup', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        $seedOutput = \Illuminate\Support\Facades\Artisan::output();
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+        } catch (\Throwable $t) {}
+
+        return response("<html><body style='font-family:sans-serif;padding:30px;line-height:1.6;background:#0f172a;color:#f8fafc;'>"
+            . "<h2 style='color:#22c55e;'>🎉 Database Setup Completed Successfully!</h2>"
+            . "<p>Your database tables and initial site content have been installed.</p>"
+            . "<h3>Admin Credentials:</h3>"
+            . "<p><b>Email:</b> admin@mauliplots.in<br><b>Password:</b> Mauli@12345</p>"
+            . "<a href='/' style='display:inline-block;padding:10px 20px;background:#ea580c;color:#fff;text-decoration:none;border-radius:6px;margin-top:15px;'>Go to Website Home</a>"
+            . "<h4 style='margin-top:30px;'>Migration Details:</h4>"
+            . "<pre style='background:#1e293b;padding:15px;border-radius:6px;overflow:auto;'>" . e($migrateOutput) . "\n" . e($seedOutput) . "</pre>"
+            . "</body></html>");
+    } catch (\Throwable $e) {
+        return response("<html><body style='font-family:sans-serif;padding:30px;line-height:1.6;background:#0f172a;color:#f8fafc;'>"
+            . "<h2 style='color:#ef4444;'>❌ Setup Error</h2>"
+            . "<pre style='background:#1e293b;padding:15px;border-radius:6px;overflow:auto;'>" . e($e->getMessage()) . "\n\n" . e($e->getTraceAsString()) . "</pre>"
+            . "</body></html>", 500);
+    }
+});
+
 // Authentication routes (Admin & Staff)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.store');
