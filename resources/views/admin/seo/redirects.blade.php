@@ -14,7 +14,8 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1 small">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.settings.index') }}" class="text-decoration-none">Settings</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.seo.index') }}" class="text-decoration-none">Marketing</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.seo.index') }}" class="text-decoration-none">SEO Management</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Redirect Rules</li>
                 </ol>
             </nav>
@@ -23,7 +24,10 @@
             </h1>
             <p class="text-muted small mb-0">Protect SEO rankings and prevent broken 404 links during migrations or URL restructure.</p>
         </div>
-        <div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.seo.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> SEO Settings & Tags
+            </a>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newRedirectModal">
                 <i class="bi bi-plus-circle me-1"></i> Add Redirect Rule
             </button>

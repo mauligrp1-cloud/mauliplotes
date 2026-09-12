@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\SiteVisitController as AdminSiteVisitController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\RedirectController as AdminRedirectController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\SeoController;
 
 use App\Http\Controllers\Frontend\PageController;
 use App\Http\Controllers\Frontend\ProjectController as FrontendProjectController;
@@ -169,7 +170,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/pages', [WebsiteController::class, 'storePage'])->name('admin.pages.store')->middleware('permission:website.edit');
     Route::delete('/pages/{page}', [WebsiteController::class, 'destroyPage'])->name('admin.pages.destroy')->middleware('permission:website.edit');
     Route::delete('/website/pages/{page}', [WebsiteController::class, 'destroyPage'])->name('admin.website.pages.destroy')->middleware('permission:website.edit');
-    Route::get('/seo', function () { return redirect()->route('admin.seo.redirects.index'); })->name('admin.seo.index');
+    Route::get('/seo', [SeoController::class, 'index'])->name('admin.seo.index')->middleware('permission:seo.view');
+    Route::post('/seo', [SeoController::class, 'update'])->name('admin.seo.update')->middleware('permission:seo.edit');
     Route::resource('users', AdminUserController::class)->names('admin.users');
     Route::resource('seo/redirects', AdminRedirectController::class)->names('admin.seo.redirects');
 });

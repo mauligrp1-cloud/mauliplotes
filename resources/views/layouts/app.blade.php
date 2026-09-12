@@ -7,9 +7,58 @@
 
     <title>@yield('title', $title ?? \App\Models\Setting::get('default_meta_title', 'Mauli Infra | Nagpur\'s Most Trusted Land Developer'))</title>
     <meta name="description" content="@yield('meta_description', $metaDescription ?? \App\Models\Setting::get('default_meta_description', 'Your Land — A Brighter Tomorrow. Thoughtfully planned plotted communities in prime Nagpur locations.'))">
+    @if($metaKeywords = \App\Models\Setting::get('default_meta_keywords'))
+        <meta name="keywords" content="{{ $metaKeywords }}">
+    @endif
     <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
     @if(!empty($robots))
         <meta name="robots" content="{{ $robots }}">
+    @endif
+
+    <!-- Webmaster Verifications -->
+    @if($gsc = \App\Models\Setting::get('google_site_verification'))
+        <meta name="google-site-verification" content="{{ $gsc }}">
+    @endif
+    @if($bing = \App\Models\Setting::get('bing_site_verification'))
+        <meta name="msvalidate.01" content="{{ $bing }}">
+    @endif
+
+    <!-- Tracking: Google Tag Manager -->
+    @if($gtmId = \App\Models\Setting::get('google_tag_manager_id'))
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','{{ $gtmId }}');</script>
+    @endif
+
+    <!-- Tracking: Google Analytics 4 (GA4) -->
+    @if($gaId = \App\Models\Setting::get('google_analytics_id'))
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ $gaId }}');
+    </script>
+    @endif
+
+    <!-- Tracking: Meta Pixel (Facebook) -->
+    @if($fbPixelId = \App\Models\Setting::get('facebook_pixel_id'))
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '{{ $fbPixelId }}');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id={{ $fbPixelId }}&ev=PageView&noscript=1"/></noscript>
     @endif
 
     <!-- OpenGraph -->
@@ -393,8 +442,18 @@
     </style>
 
     @stack('styles')
+
+    <!-- Custom Injected Header Scripts -->
+    @if($customHeader = \App\Models\Setting::get('custom_header_scripts'))
+        {!! $customHeader !!}
+    @endif
 </head>
 <body class="d-flex flex-column min-vh-100 pb-5 pb-md-0">
+    <!-- Google Tag Manager (noscript) -->
+    @if($gtmId = \App\Models\Setting::get('google_tag_manager_id'))
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $gtmId }}"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    @endif
     <!-- Header Navigation -->
     @include('partials.frontend.header')
 
@@ -416,5 +475,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     @stack('scripts')
+
+    <!-- Custom Injected Body / Footer Scripts -->
+    @if($customBody = \App\Models\Setting::get('custom_body_scripts'))
+        {!! $customBody !!}
+    @endif
 </body>
 </html>
